@@ -7,13 +7,13 @@ erlang2lisp(File_name) :-
     !.
 
 % Reguły DCG
-translate(Lisp_translation) --> line(Line), whitespace, {atomic_list_concat([Line], Lisp_translation)}.
-translate(Lisp_translation) --> line(Line), whitespace, newline, translate(Lines), {atomic_list_concat([Line, '\n', Lines], Lisp_translation)}.
-translate(Lisp_translation) --> line(Line), whitespace, newline, {atomic_list_concat([Line, '\n'], Lisp_translation)}.
+translate(Lisp_translation) --> line(Line), whitespace, {atomic_list_concat([Line], Lisp_translation)};
+                                line(Line), whitespace, newline, translate(Lines), {atomic_list_concat([Line, '\n', Lines], Lisp_translation)};
+                                line(Line), whitespace, newline, {atomic_list_concat([Line, '\n'], Lisp_translation)}.
 
 % Kolejne linie
-line(Line) --> whitespace, comment_sign, anything(_), {concat_atom([''], Line)}.
-line(Line) --> whitespace, statements(Statements), {concat_atom([Statements], Line)}.
+line(Line) --> whitespace, comment_sign, anything(_), {concat_atom([''], Line)};
+               whitespace, statements(Statements), {concat_atom([Statements], Line)}.
 
 % Statements
 statements(Statements) --> exp(Expression), {atomic_list_concat([Expression], Statements)}.
@@ -27,46 +27,42 @@ assignable(Assignable) --> number(Assignable); variable(Assignable).
 
 % Zmienna
 % TODO Wziąć pod uwagę fakt, że w lispie nie ma znaczenia wielkość liter, tzn. FOO == foo == Foo == fOo itd
-variable(Variable) --> uppercase(V1), variable_rest(Rest), {concat_atom([V1, Rest], Variable)}.
-variable(Variable) --> uppercase(Variable).
-variable_rest(Variable_rest) --> prolog_identifier_continue(V1), variable_rest(Rest), {concat_atom([V1, Rest], Variable_rest)}.
-variable_rest(Variable_rest) --> prolog_identifier_continue(Variable_rest).
+variable(Variable) --> uppercase(V1), variable_rest(Rest), {concat_atom([V1, Rest], Variable)};
+                       uppercase(Variable).
+variable_rest(Variable_rest) --> prolog_identifier_continue(V1), variable_rest(Rest), {concat_atom([V1, Rest], Variable_rest)};
+                                 prolog_identifier_continue(Variable_rest).
 uppercase(Variable) --> [V1], {code_type(V1, upper), atom_codes(Variable, [V1])}.
 prolog_identifier_continue(Variable_rest) --> [V1], {code_type(V1, prolog_identifier_continue), atom_codes(Variable_rest, [V1])}.
 
 % Liczby
-number(N) --> integer_number(N).
-number(N) --> float_number(N).
+number(N) --> integer_number(N); float_number(N).
 digit(Digit) --> [Digit1], {code_type(Digit1, digit), atom_codes(Digit, [Digit1])}.
 
 % Liczby całkowite, złożone z jednej lub więcej cyfr.
-integer_number(Int) --> digit(Int1), integer_number(Rest), {concat_atom([Int1, Rest], Int)}.
-integer_number(Int) --> digit(Int).
+integer_number(Int) --> digit(Int1), integer_number(Rest), {concat_atom([Int1, Rest], Int)};
+                        digit(Int).
 
 % Liczby float
-float_number(Float) --> digit(Digit), ".", integer_number(Rest), {concat_atom([Digit, '.', Rest], Float)}.
-float_number(Float) --> digit(Digit), integer_number(Int), ".", integer_number(Rest), {concat_atom([Digit, Int, '.', Rest], Float)}.
+float_number(Float) --> digit(Digit), ".", integer_number(Rest), {concat_atom([Digit, '.', Rest], Float)};
+                        digit(Digit), integer_number(Int), ".", integer_number(Rest), {concat_atom([Digit, Int, '.', Rest], Float)}.
 
 % Operatory
-operator(Op) --> "+", {atomic_list_concat(['+'], Op)}.
-operator(Op) --> "-", {atomic_list_concat(['-'], Op)}.
-operator(Op) --> "*", {atomic_list_concat(['*'], Op)}.
-operator(Op) --> "/", {atomic_list_concat(['/'], Op)}.
+operator(Op) --> "+", {atomic_list_concat(['+'], Op)};
+                 "-", {atomic_list_concat(['-'], Op)};
+                 "*", {atomic_list_concat(['*'], Op)};
+                 "/", {atomic_list_concat(['/'], Op)}.
 
 % Białe znaki.
-whitespace --> " ", whitespace.
-whitespace --> "\t", whitespace.
-whitespace --> "".
+whitespace --> " ", whitespace;
+               "\t", whitespace;
+               "".
 
 % Znaki nowej linii.
-newline --> "\n".
-newline --> "\r".
-newline --> "\r\n".
-newline --> "\n\r".
+newline --> "\n"; "\r"; "\r\n"; "\n\r".
 
 % Komentarz
 comment_sign --> "%".
 
 % Cokolwiek
-anything(A) --> [A1], anything(A3), {atom_codes(A2, [A1]), concat_atom([A2, A3], A)}.
-anything(A) --> [A1], {atom_codes(A2, [A1]), concat_atom([A2], A)}.
+anything(A) --> [A1], anything(A3), {atom_codes(A2, [A1]), concat_atom([A2, A3], A)};
+                [A1], {atom_codes(A2, [A1]), concat_atom([A2], A)}.
