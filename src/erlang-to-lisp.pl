@@ -20,6 +20,19 @@ statements(Statements) --> exp(Expression), {atomic_list_concat([Expression], St
 
 % Wyrażenia arytmetyczne
 exp(Expression) --> number(Number1), " ", operator(Op), " ", number(Number2), {atomic_list_concat(['(', Op, ' ', Number1, ' ', Number2, ')'], Expression)}.
+% Przypisanie do zmiennej
+exp(Expression) --> variable(V1), " = ", assignable(N1), {atomic_list_concat(['(defvar', ' ', V1, ' ', N1, ')'], Expression)}.
+
+assignable(Assignable) --> number(Assignable); variable(Assignable).
+
+% Zmienna
+% TODO Wziąć pod uwagę fakt, że w lispie nie ma znaczenia wielkość liter, tzn. FOO == foo == Foo == fOo itd
+variable(Variable) --> uppercase(V1), variable_rest(Rest), {concat_atom([V1, Rest], Variable)}.
+variable(Variable) --> uppercase(Variable).
+variable_rest(Variable_rest) --> prolog_identifier_continue(V1), variable_rest(Rest), {concat_atom([V1, Rest], Variable_rest)}.
+variable_rest(Variable_rest) --> prolog_identifier_continue(Variable_rest).
+uppercase(Variable) --> [V1], {code_type(V1, upper), atom_codes(Variable, [V1])}.
+prolog_identifier_continue(Variable_rest) --> [V1], {code_type(V1, prolog_identifier_continue), atom_codes(Variable_rest, [V1])}.
 
 % Liczby
 number(N) --> integer_number(N).
