@@ -17,11 +17,12 @@ line(Line) --> whitespace, comment_sign, anything(_), {concat_atom([''], Line)};
 
 % Statements
 statements(Statements) --> exp(Expression), {atomic_list_concat([Expression], Statements)}.
+statements(Statements) --> assignment(Assignment), {atomic_list_concat([Assignment], Statements)}.
 
 % Wyrażenia arytmetyczne
 exp(Expression) --> number(Number1), " ", operator(Op), " ", number(Number2), {atomic_list_concat(['(', Op, ' ', Number1, ' ', Number2, ')'], Expression)}.
 % Przypisanie do zmiennej
-exp(Expression) --> variable(V1), " = ", assignable(N1), {atomic_list_concat(['(defvar', ' ', V1, ' ', N1, ')'], Expression)}.
+assignment(Assignment) --> variable(V1), " = ", assignable(N1), {atomic_list_concat(['(defvar', ' ', V1, ' ', N1, ')'], Assignment)}.
 
 assignable(Assignable) --> number(Assignable); variable(Assignable).
 
