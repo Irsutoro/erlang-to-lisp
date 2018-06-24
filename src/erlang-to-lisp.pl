@@ -37,11 +37,13 @@ format_print(Print) --> "io:format(", str(Str), ")", {atomic_list_concat(['(prin
 
 
 % Wyrażenia arytmetyczne
-exp(Expression) --> number(Number1), " ", operator(Op), " ", number(Number2), {atomic_list_concat(['(', Op, ' ', Number1, ' ', Number2, ')'], Expression)}.
+exp(Expression) --> exparg(Number1), " ", operator(Op), " ", exparg(Number2), {atomic_list_concat(['(', Op, ' ', Number1, ' ', Number2, ')'], Expression)}.
+
+exparg(ExpArg) --> number(ExpArg); variable(ExpArg).
 % Przypisanie do zmiennej
 assignment(Assignment) --> variable(V1), " = ", assignable(N1), {atomic_list_concat(['(defvar', ' ', V1, ' ', N1, ')'], Assignment)}.
 
-assignable(Assignable) --> number(Assignable); variable(Assignable); str(Assignable).
+assignable(Assignable) --> number(Assignable); variable(Assignable); str(Assignable); exp(Assignable).
 
 str(A) --> "\"", str_body(B), "\"", {concat_atom(['\"', B, '\"'], A)}.
 
