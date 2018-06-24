@@ -1,2 +1,1 @@
-A = "AAA"
-io:format("aaaa")
+io:format("Hello World")

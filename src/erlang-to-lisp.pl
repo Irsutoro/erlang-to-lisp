@@ -43,7 +43,10 @@ assignment(Assignment) --> variable(V1), " = ", assignable(N1), {atomic_list_con
 
 assignable(Assignable) --> number(Assignable); variable(Assignable); str(Assignable).
 
-str(A) --> "\"", variable_rest(B), "\"", {concat_atom(['\"', B, '\"'], A)}.
+str(A) --> "\"", str_body(B), "\"", {concat_atom(['\"', B, '\"'], A)}.
+
+str_body(A) --> variable_rest(A).
+str_body(A) --> variable_rest(B), " ", str_body(C), {concat_atom([B, ' ', C], A)}.
 % Zmienna
 % TODO Wziąć pod uwagę fakt, że w lispie nie ma znaczenia wielkość liter, tzn. FOO == foo == Foo == fOo itd
 variable(Variable) --> uppercase(V1), variable_rest(Rest), {concat_atom([V1, Rest], Variable)};
