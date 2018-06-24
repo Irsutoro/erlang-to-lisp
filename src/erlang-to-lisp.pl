@@ -33,14 +33,17 @@ funbody(Funbody) --> exp(Funbody);
 % Wypisywanie
 format_print(Print) --> "io:format(", variable(Variable), ")", {atomic_list_concat(['(print ', Variable, ')'], Print)}.
 format_print(Print) --> "io:format(", number(Number), ")", {atomic_list_concat(['(print ', Number, ')'], Print)}.
+format_print(Print) --> "io:format(", str(Str), ")", {atomic_list_concat(['(print ', Str, ')'], Print)}.
+
 
 % Wyrażenia arytmetyczne
 exp(Expression) --> number(Number1), " ", operator(Op), " ", number(Number2), {atomic_list_concat(['(', Op, ' ', Number1, ' ', Number2, ')'], Expression)}.
 % Przypisanie do zmiennej
 assignment(Assignment) --> variable(V1), " = ", assignable(N1), {atomic_list_concat(['(defvar', ' ', V1, ' ', N1, ')'], Assignment)}.
 
-assignable(Assignable) --> number(Assignable); variable(Assignable).
+assignable(Assignable) --> number(Assignable); variable(Assignable); str(Assignable).
 
+str(A) --> "\"", variable_rest(B), "\"", {concat_atom(['\"', B, '\"'], A)}.
 % Zmienna
 % TODO Wziąć pod uwagę fakt, że w lispie nie ma znaczenia wielkość liter, tzn. FOO == foo == Foo == fOo itd
 variable(Variable) --> uppercase(V1), variable_rest(Rest), {concat_atom([V1, Rest], Variable)};
