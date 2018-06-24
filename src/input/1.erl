@@ -4,3 +4,8 @@
 Foo = 42
 BaR = Foo
 Abc123__ = 123
+
+funname() ->
+    BaR = Foo
+
+Foo = 42

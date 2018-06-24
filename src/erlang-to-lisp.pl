@@ -8,8 +8,8 @@ erlang2lisp(File_name) :-
 
 % Reguły DCG
 translate(Lisp_translation) --> line(Line), whitespace, {atomic_list_concat([Line], Lisp_translation)};
-                                line(Line), whitespace, newline, translate(Lines), {atomic_list_concat([Line, '\n', Lines], Lisp_translation)};
-                                line(Line), whitespace, newline, {atomic_list_concat([Line, '\n'], Lisp_translation)}.
+                                line(Line), whitespace, newlines, translate(Lines), {atomic_list_concat([Line, '\n', Lines], Lisp_translation)};
+                                line(Line), whitespace, newlines, {atomic_list_concat([Line, '\n'], Lisp_translation)}.
 
 % Kolejne linie
 line(Line) --> whitespace, comment_sign, anything(_), {concat_atom([''], Line)};
@@ -18,6 +18,12 @@ line(Line) --> whitespace, comment_sign, anything(_), {concat_atom([''], Line)};
 % Statements
 statements(Statements) --> exp(Expression), {atomic_list_concat([Expression], Statements)}.
 statements(Statements) --> assignment(Assignment), {atomic_list_concat([Assignment], Statements)}.
+statements(Statements) --> fundef(FunDef), {atomic_list_concat([FunDef], Statements)}.
+
+fundef(FunDef) --> variable_rest(Function), "() ->", newline, whitespace, funbody(Funbody), {atomic_list_concat(['(defun ', Function, ' () ', Funbody, ')'], FunDef)}.
+
+funbody(Funbody) --> exp(Funbody);
+                     assignment(Funbody).
 
 % Wyrażenia arytmetyczne
 exp(Expression) --> number(Number1), " ", operator(Op), " ", number(Number2), {atomic_list_concat(['(', Op, ' ', Number1, ' ', Number2, ')'], Expression)}.
@@ -60,6 +66,8 @@ whitespace --> " ", whitespace;
 
 % Znaki nowej linii.
 newline --> "\n"; "\r"; "\r\n"; "\n\r".
+
+newlines --> newline, whitespace; newlines, newline, whitespace.
 
 % Komentarz
 comment_sign --> "%".
