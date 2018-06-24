@@ -20,16 +20,19 @@ statements(Statements) --> exp(Expression), {atomic_list_concat([Expression], St
 statements(Statements) --> assignment(Assignment), {atomic_list_concat([Assignment], Statements)}.
 statements(Statements) --> fundef(FunDef), {atomic_list_concat([FunDef], Statements)}.
 statements(Statements) --> exportormodule(Exportmod), {atomic_list_concat([Exportmod], Statements)}.
-
+statements(Statements) --> format_print(Print), {atomic_list_concat([Print], Statements)}.
 
 exportormodule(Expormod) --> "-module(", variable_rest(_), ").", whitespace, {atomic_list_concat([''], Expormod)};
                              "-export([", variable_rest(_), "/", number(_), "]).", {atomic_list_concat([''], Expormod)}.
-
 
 fundef(FunDef) --> variable_rest(Function), "() ->", newline, whitespace, funbody(Funbody), {atomic_list_concat(['(defun ', Function, ' () ', Funbody, ')'], FunDef)}.
 
 funbody(Funbody) --> exp(Funbody);
                      assignment(Funbody).
+
+% Wypisywanie
+format_print(Print) --> "io:format(", variable(Variable), ")", {atomic_list_concat(['(print ', Variable, ')'], Print)}.
+format_print(Print) --> "io:format(", number(Number), ")", {atomic_list_concat(['(print ', Number, ')'], Print)}.
 
 % Wyrażenia arytmetyczne
 exp(Expression) --> number(Number1), " ", operator(Op), " ", number(Number2), {atomic_list_concat(['(', Op, ' ', Number1, ' ', Number2, ')'], Expression)}.
@@ -63,7 +66,13 @@ float_number(Float) --> digit(Digit), ".", integer_number(Rest), {concat_atom([D
 operator(Op) --> "+", {atomic_list_concat(['+'], Op)};
                  "-", {atomic_list_concat(['-'], Op)};
                  "*", {atomic_list_concat(['*'], Op)};
-                 "/", {atomic_list_concat(['/'], Op)}.
+                 "/", {atomic_list_concat(['/'], Op)};
+                 "==", {atomic_list_concat(['='], Op)};
+                 "/=", {atomic_list_concat(['/='], Op)};
+                 "<", {atomic_list_concat(['<'], Op)};
+                 ">", {atomic_list_concat(['>'], Op)};
+                 ">=", {atomic_list_concat(['>='], Op)};
+                 "=<", {atomic_list_concat(['<='], Op)}.
 
 % Białe znaki.
 whitespace --> " ", whitespace;
