@@ -19,6 +19,12 @@ line(Line) --> whitespace, comment_sign, anything(_), {concat_atom([''], Line)};
 statements(Statements) --> exp(Expression), {atomic_list_concat([Expression], Statements)}.
 statements(Statements) --> assignment(Assignment), {atomic_list_concat([Assignment], Statements)}.
 statements(Statements) --> fundef(FunDef), {atomic_list_concat([FunDef], Statements)}.
+statements(Statements) --> exportormodule(Exportmod), {atomic_list_concat([Exportmod], Statements)}.
+
+
+exportormodule(Expormod) --> "-module(", variable_rest(_), ").", whitespace, {atomic_list_concat([''], Expormod)};
+                             "-export([", variable_rest(_), "/", number(_), "]).", {atomic_list_concat([''], Expormod)}.
+
 
 fundef(FunDef) --> variable_rest(Function), "() ->", newline, whitespace, funbody(Funbody), {atomic_list_concat(['(defun ', Function, ' () ', Funbody, ')'], FunDef)}.
 
