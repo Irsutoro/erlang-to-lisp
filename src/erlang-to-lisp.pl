@@ -21,6 +21,19 @@ statements(Statements) --> assignment(Assignment), {atomic_list_concat([Assignme
 statements(Statements) --> fundef(FunDef), {atomic_list_concat([FunDef], Statements)}.
 statements(Statements) --> exportormodule(Exportmod), {atomic_list_concat([Exportmod], Statements)}.
 statements(Statements) --> format_print(Print), {atomic_list_concat([Print], Statements)}.
+statements(Statements) --> ifelse(Ifelse), {atomic_list_concat([Ifelse], Statements)}.
+statements(Statements) --> function_call(Call), {atomic_list_concat([Call], Statements)}.
+
+ifelse(Ifelse) --> "if", whitespace, newline, whitespace, comparision(Comp), whitespace, "->", whitespace, newline, whitespace, callable(Stat1), whitespace, newline, whitespace, else(Else), whitespace, "end", whitespace, {atomic_list_concat(['(if ', Comp, ' ', Stat1, ' ', Else, ')'], Ifelse)}.
+
+else(Else) --> "true ->", whitespace, newline, whitespace, callable(Stat1), whitespace, newline, whitespace, {atomic_list_concat([Stat1], Else)};
+                "", {atomic_list_concat(['()'], Else)}.
+
+
+
+callable(Callable) --> function_call(Callable); assignment(Callable); exp(Callable); format_print(Callable); ifelse(Callable).
+
+function_call(FunCall) --> variable_rest(Function), "()", {atomic_list_concat(['(', Function, ')'], FunCall)}.
 
 exportormodule(Expormod) --> "-module(", variable_rest(_), ").", whitespace, {atomic_list_concat([''], Expormod)};
                              "-export([", variable_rest(_), "/", number(_), "]).", {atomic_list_concat([''], Expormod)}.
@@ -28,7 +41,10 @@ exportormodule(Expormod) --> "-module(", variable_rest(_), ").", whitespace, {at
 fundef(FunDef) --> variable_rest(Function), "() ->", newline, whitespace, funbody(Funbody), {atomic_list_concat(['(defun ', Function, ' () ', Funbody, ')'], FunDef)}.
 
 funbody(Funbody) --> exp(Funbody);
-                     assignment(Funbody).
+                     assignment(Funbody);
+                     format_print(Funbody);
+                     ifelse(Funbody);
+                     function_call(Funbody).
 
 % Wypisywanie
 format_print(Print) --> "io:format(", variable(Variable), ")", {atomic_list_concat(['(print ', Variable, ')'], Print)}.
@@ -38,10 +54,12 @@ format_print(Print) --> "io:format(", str(Str), ")", {atomic_list_concat(['(prin
 
 % Wyrażenia arytmetyczne
 exp(Expression) --> exparg(Number1), " ", operator(Op), " ", exparg(Number2), {atomic_list_concat(['(', Op, ' ', Number1, ' ', Number2, ')'], Expression)}.
+comparision(Expression) --> exparg(Number1), " ", comparision_op(Op), " ", exparg(Number2), {atomic_list_concat(['(', Op, ' ', Number1, ' ', Number2, ')'], Expression)}.
+
 
 exparg(ExpArg) --> number(ExpArg); variable(ExpArg).
 % Przypisanie do zmiennej
-assignment(Assignment) --> variable(V1), " = ", assignable(N1), {atomic_list_concat(['(defvar', ' ', V1, ' ', N1, ')'], Assignment)}.
+assignment(Assignment) --> variable(V1), " = ", assignable(N1), {atomic_list_concat(['(setq', ' ', V1, ' ', N1, ')'], Assignment)}.
 
 assignable(Assignable) --> number(Assignable); variable(Assignable); str(Assignable); exp(Assignable).
 
@@ -74,8 +92,9 @@ float_number(Float) --> digit(Digit), ".", integer_number(Rest), {concat_atom([D
 operator(Op) --> "+", {atomic_list_concat(['+'], Op)};
                  "-", {atomic_list_concat(['-'], Op)};
                  "*", {atomic_list_concat(['*'], Op)};
-                 "/", {atomic_list_concat(['/'], Op)};
-                 "==", {atomic_list_concat(['='], Op)};
+                 "/", {atomic_list_concat(['/'], Op)}.
+
+comparision_op(Op) --> "==", {atomic_list_concat(['='], Op)};
                  "/=", {atomic_list_concat(['/='], Op)};
                  "<", {atomic_list_concat(['<'], Op)};
                  ">", {atomic_list_concat(['>'], Op)};

@@ -1,3 +1,8 @@
-A = 5
-B = 4
-C = A + B
+-module(helloworld).
+-export([start/0]).
+
+sayhello() ->
+    io:format("Hello")
+
+start() ->
+    sayhello()

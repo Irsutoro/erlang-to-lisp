@@ -8,8 +8,6 @@ Foo = 42
 BaR = Foo
 Abc123__ = 123
 
-io:format(Foo)
-
 funname() ->
     BaR = Foo
 
